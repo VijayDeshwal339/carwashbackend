@@ -3,64 +3,31 @@ const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const OTPModel = require("../Models/OTP");
 class AuthController {
-    // static userregister = async (req,res) => {
-    //     const {
-    //         firstname,
-    //         lastname,
-    //         address,
-    //         email,
-    //         password,
-    //         mobilenumber,
-    //         alternatenumber,
-    //     } = req.body;
-    //     try{
-    //         const existinguser = await UserModel.findOne({ email: email});
-    //         if(existinguser){
-    //             return res.status(409).json({message:"Username already exists"})
-    //         } else {
-    //             const hashPassword = await bcrypt.hash(password, 10);
-    //             const data = await UserModel({
-    //                 firstname,
-    //                 lastname,
-    //                 address,
-    //                 email,
-    //                 password: hashPassword,
-    //                 mobilenumber,
-    //                 alternatenumber,
-    //             });
-    //             res.status(200).json({
-    //                 status: "success",
-    //                 message: "User registration Successfully!...",
-    //                 result,
-    //               });
-    //         }
-    //     }catch (err) {
-    //         res.status(500).json({ message: "Internal Server Error" + err });
-    //       }
-    // };
-    static sendotp = async (req,res) => {
-        try{
-            const {email} = req.body;
-            const user = await OTPModel.findOne({email:email});
-            if (user) {
-                res.status(500).json({
-                    success: true,
-                    message: "User already registered!...",
-             });
-            }
-            const otp = Math.floor(100000 + Math.random() * 900000);
-       // Nodemailer setup
-       const transporter = nodemailer.createTransport({
+  static sendotp = async (req, res) => {
+    try {
+      const { email } = req.body;
+      const user = await OTPModel.findOne({ email: email });
+      if (user) {
+        res.status(500).json({
+          success: true,
+          message: "User already registered!...",
+        });
+      }
+
+      const otp = Math.floor(100000 + Math.random() * 900000);
+
+      // Nodemailer setup
+      const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
-          user: 'Deshwalamit339@gmail.com',
-          pass: "nuzu karl vsaz qeio",
+          user:'Deshwalamit339@gmail.com',
+          pass:"nuzu karl vsaz qeio"
         },
       });
 
       // Send OTP email
       const info = await transporter.sendMail({
-        from: '"Your Name" <jooligupta2000@gmail.com>', // Update with your name and email
+        from: 'Deshwalamit339@gmail.com', // Update with your name and email
         to: email,
         subject: "Email Verification OTP",
         text: `Your OTP for email verification is: ${otp}`,
@@ -149,71 +116,7 @@ class AuthController {
         .json({ success: false, message: "Internal Server Error" });
     }
   };
-
-  // static registration = async (req, res) => {
-  //   const {
-  //     firstname,
-  //     lastname,
-  //     address,
-  //     email,
-  //     password,
-  //     mobilenumber,
-  //     alternatenumber,
-  //   } = req.body;
-  //   try {
-  //     const existinguser = await UserModel.findOne({ email: email });
-  //     if (existinguser) {
-  //       return res.status(401).json({ message: "Username already exists" });
-  //     } else {
-  //       const otp = Math.floor(100000 + Math.random() * 900000);
-
-  //       var transport = nodemailer.createTransport({
-  //         service: "gmail",
-  //         auth: {
-  //           user: 'Deshwalamit339@gmail.com',
-  //         pass: "nuzu karl vsaz qeio",
-  //         },
-  //       });
-
-  //       const info = await transport.sendMail({
-  //         from: '"Your Name" <jooligupta2000@gmail.com>', // Update with your name and email
-  //         to: email,
-  //         subject: "Email Verification OTP",
-  //         text: `Your OTP for email verification is: ${otp}`,
-  //         html: `<b>Your OTP for email verification is: ${otp}</b>`,
-  //       });
-  //       transport.sendMail(info, (err, result) => {
-  //         if (err) {
-  //           console.log("Error");
-  //         }
-  //       });
-  //       const hashPassword = await bcrypt.hash(password, 10);
-  //       const data = await UserModel({
-  //         firstname,
-  //         lastname,
-  //         address,
-  //         email,
-  //         password: hashPassword,
-  //         mobilenumber,
-  //         alternatenumber,
-  //       });
-  //       await data.save();
-       
-
-  //       const result = await data.save();
-  //       res.status(200).json({
-  //         status: "success",
-  //         //  message: "User registration Successfully!...",
-  //         message: "OTP sent successfully. Check your email for OTP.",
-  //         result,
-  //         otp,
-  //       });
-  //     }
-  //   } catch (err) {
-  //     res.status(500).json({ message: "Internal Server Error" + err });
-  //   }
-  // };
-
+  // ---------------------------------- forgot password---------------------------------------------------------//
   static forgetpassword = async (req, res) => {
     try {
       const { email } = req.body;
@@ -252,6 +155,8 @@ class AuthController {
       res.status(500).json({ message: "Internal Server Error" + err });
     }
   };
+
+  //-------------------------------------------------- resetPassword -------------------------------------------//
   static resetPassword = async (req, res) => {
     try {
       const { email, otp, newPassword } = req.body;
@@ -272,7 +177,8 @@ class AuthController {
       res.status(500).json({ message: "Internal Server Error" + err });
     }
   };
-  
+
+  //------------------------------------------- login -----------------------------------------------------//
   static login = async (req, res) => {
     const { email, password } = req.body;
     if (email && password) {
