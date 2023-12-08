@@ -113,7 +113,7 @@ class AuthController {
       console.error(error);
       res
         .status(500)
-        .json({ success: false, message: "Internal Server Error" });
+        .json({ success: false, message: "Internal Server Error" ,error});
     }
   };
   // ---------------------------------- forgot password---------------------------------------------------------//
