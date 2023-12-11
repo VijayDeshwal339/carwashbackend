@@ -13,7 +13,8 @@ class AuthController {
           message: "User already registered!...",
         });
       }
-
+      
+      else {
       const otp = Math.floor(100000 + Math.random() * 900000);
 
       // Nodemailer setup
@@ -40,8 +41,11 @@ class AuthController {
         otp: otp.toString(), // Convert OTP to string before saving
       });
 
+    
       await otpRecord.save();
+    }
       res.status(200).json({ success: true, message: "Success", otpRecord });
+    
     } catch (error) {
       console.error(error);
       res
