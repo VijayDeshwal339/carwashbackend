@@ -2,6 +2,8 @@ const UserModel = require("../Models/User");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const OTPModel = require("../Models/OTP");
+const jwt = require("jsonwebtoken");
+
 class AuthController {
   static sendotp = async (req, res) => {
     try {
@@ -186,25 +188,36 @@ class AuthController {
   static login = async (req, res) => {
     const { email, password } = req.body;
     if (email && password) {
-      const user = await UserModel.findOne({ email: email });
-      console.log(user);
-      if (user != null) {
-        const isMatched = await bcrypt.compare(password, user.password);
-        if (user.email === email && isMatched) {
-          res
-            .status(200)
-            .json({
-              message: "Congrulation User sucessfully Login!....",
+      try {
+        const user = await UserModel.findOne({ email: email });
+        if (user != null) {
+          const isMatched = await bcrypt.compare(password, user.password);
+          if (user.email === email && isMatched) {
+            // Generate a JWT token
+            const token = jwt.sign(
+              { userId: user._id, email: user.email },
+              "your_secret_key",
+              { expiresIn: "1h" }
+            );
+
+            res.status(200).json({
+              message: "Congratulations! User successfully logged in.",
               user,
+              token,
             });
+          } else {
+            res
+              .status(500)
+              .json({ message: "Email and password do not match" });
+          }
         } else {
-          res.status(500).json({ message: "email and password not match" });
+          res.status(500).json({ message: "You are not a registered user" });
         }
-      } else {
-        res.status(500).json({ message: "you are not registered user" });
+      } catch (error) {
+        res.status(500).json({ message: "Internal server error" });
       }
     } else {
-      res.status(500).json({ message: "All field are required" });
+      res.status(500).json({ message: "All fields are required" });
     }
   };
 }
