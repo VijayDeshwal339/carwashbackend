@@ -1,37 +1,38 @@
 const UserModel = require("../Models/User");
-const userModel = require("../Models/User");
 
 class UserController {
-    static createsupervisior = async (req,res) =>{
-        try{
-          let d = req.body;
-          let data = await UserModel.create(d);
-          await data.save();
-          res
-           .status(201)
-           .json({message: "Supervisor Created Successfully"});
-        } catch (err) {
+  static createsupervisior = async (req, res) => {
+    try {
+      let d = req.body;
+      let data = await UserModel.create(d);
+      await data.save();
+      res
+        .status(200)
+        .json({ msg: "supervisior successfully created!...", data });
+    } catch (err) {
       res.status(500).json({ msg: "Supervisior not created" });
     }
- };
- static getsupervisior = async(req,res) => {
+  };
+  
+  static getsupervisior = async (req, res) => {
     let pages = req.query.pages;
-    let role = req.query.role;
-    try{
-        console.log("user", req.user._id);
-        let query = {};
-        if(role) {
-            query = {role: role};
-        }
-        let user = await UserModel.find(query)
-        .skip(10 *(pages - 1))
-        .limit(10);
-        res.status(200).json(user);
-    }  catch (error) {
-        res.status(500).json({ msg: "Data Not Found" });
+    let role = req.query.role; // assuming the role is passed in the query parameters
+    try {
+      console.log("user", req.user._id);
+      let query = {};
+      // If role is provided, add it to the query
+      if (role) {
+        query = { role: role };
       }
- };
- static getsinglesupervisior = async (req, res) => {
+      let user = await UserModel.find(query)
+        .skip(10 * (pages - 1))
+        .limit(10); // pagination of 10 user details
+      res.status(200).json(user);
+    } catch (error) {
+      res.status(500).json({ msg: "Data Not Found" });
+    }
+  };
+  static getsinglesupervisior = async (req, res) => {
     try {
       const userId = req.params.id;
       const role = req.query.role; // assuming the role is passed in the query parameters
@@ -90,7 +91,7 @@ class UserController {
       res.status(500).json({ message: "Internal Server Error" + err });
     }
   };
-
+  
 }
 
 module.exports = UserController;
