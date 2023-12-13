@@ -1,15 +1,22 @@
-var router= require('express').Router() 
-// const express =require('express');
-// const router =express.Router();
- const AuthController = require('../Contoller/AuthController');
+const express = require("express");
+const router = express.Router();
+const AuthController = require('../Contoller/AuthController');
+const {ChangeUserAuth} = require("../Middleware/auth");
+const UserController = require("../Contoller/UserController")
 
-//  router.post("/register", AuthController.userregister);
+// User
  router.post("/login", AuthController.login);
  router.post("/forgetpassword", AuthController.forgetpassword);
  router.post("/resetpassword", AuthController.resetPassword);
  router.post("/sentotp", AuthController.sendotp);
  router.post("/verifyotp", AuthController.verifyotp);
-//  router.post("/registration", AuthController.registration);
+
+// Supervisior
+router.post("/create-supervisior",UserController.createsupervisior);
+router.get("/get-allsupervisior",ChangeUserAuth,UserController.getsupervisior);
+router.get("/getsupervisiorbyid/:id", UserController.getsinglesupervisior);
+router.post("/edit-user/:id", UserController.edituser);
+router.delete("/delete/:id", UserController.deleteUser);
 
 
 module.exports= router;

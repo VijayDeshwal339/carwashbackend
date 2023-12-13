@@ -163,24 +163,81 @@ class AuthController {
   };
 
   //-------------------------------------------------- resetPassword -------------------------------------------//
-  static resetPassword = async (req, res) => {
-    try {
-      const { email, otp, newPassword } = req.body;
-      const user = await UserModel.findOne({ email: email, otp });
-      if (!user) {
-        return res.status(400).json({ success: false, message: "Invalid OTP" });
-      }
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
-      user.password = hashedPassword;
-      user.otp = null;
+  // static resetPassword = async (req, res) => {
+  //   try {
+  //     const { email, otp, newPassword } = req.body;
+  //     const user = await UserModel.findOne({ email: email, otp });
+  //     if (!user) {
+  //       return res.status(400).json({ success: false, message: "Invalid OTP" });
+  //     }
+  //     const hashedPassword = await bcrypt.hash(newPassword, 10);
+  //     user.password = hashedPassword;
+  //     user.otp = null;
       
-      let x = await user.save();
-      console.log(x),
-        res
-          .status(200)
-          .json({ success: true, message: "Password reset successful" });
+  //     let x = await user.save();
+  //     console.log(x),
+  //       res
+  //         .status(200)
+  //         .json({ success: true, message: "Password reset successful" });
+  //   } catch (err) {
+  //     res.status(500).json({ message: "Internal Server Error" + err });
+  //   }
+  // };
+
+  static resetPassword = async (req, res) => {
+    //console.log(req.user)
+    try {
+      console.log(req.user._id);
+
+      const { oldPassword, newPassword, confirmPassword } = req.body;
+      if (oldPassword && newPassword && confirmPassword) {
+        const user = await UserModel.findById(req.user._id).select("+password");
+        console.log(user);
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        //const isPasswordMatched = await userModel.comparePassword(req.body.oldPassword);
+        console.log(isMatch);
+        if (!isMatch) {
+          return res.send({
+            status: 400,
+            message: "Old password is incorrect",
+          });
+        } else {
+          if (newPassword !== confirmPassword) {
+            return res.send({
+              status: "failed",
+              message: "password does not match",
+            });
+          } else {
+            const salt = await bcrypt.genSalt(10);
+            const newHashPassword = await bcrypt.hash(newPassword, salt);
+            //console.log(req.user)
+            await UserModel.findByIdAndUpdate(req.user._id, {
+              $set: { password: newHashPassword },
+            });
+            return res.send({
+              status: "success",
+              message: "Password changed succesfully",
+            });
+          }
+        }
+      } else {
+        return res.send({
+          status: "failed",
+          message: "All Fields are Required",
+        });
+      }
     } catch (err) {
-      res.status(500).json({ message: "Internal Server Error" + err });
+      return res.send(err);
+    }
+  };
+
+  // --------------- Logout user --------------------------//
+  static logoutUser = async (req, res) => {
+    try {
+      res.clearCookie("token");
+      res.send({ status: "success", message: "Logout Successfully!...." });
+    } catch (err) {
+      console.log(err);
     }
   };
 
@@ -195,8 +252,8 @@ class AuthController {
           if (user.email === email && isMatched) {
             // Generate a JWT token
             const token = jwt.sign(
-              { userId: user._id, email: user.email },
-              "your_secret_key",
+              { userId: user._id },
+             process.env.JWT_SECRETE_KEY,
               { expiresIn: "1h" }
             );
 
