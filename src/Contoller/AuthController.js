@@ -140,7 +140,7 @@ class AuthController {
         },
       });
       const info = await transport.sendMail({
-        from: '"Your Name" <jooligupta2000@gmail.com>', // Update with your name and email
+        from: 'Deshwalamit339@gmail.com', // Update with your name and email
         to: email,
         subject: "Email Verification OTP",
         text: `Your OTP for email verification is: ${otp}`,
@@ -187,49 +187,40 @@ class AuthController {
   static resetPassword = async (req, res) => {
     //console.log(req.user)
     try {
-      console.log(req.user._id);
-
       const { oldPassword, newPassword, confirmPassword } = req.body;
+  
       if (oldPassword && newPassword && confirmPassword) {
-        const user = await UserModel.findById(req.user._id).select("+password");
-        console.log(user);
-        const isMatch = await bcrypt.compare(oldPassword, user.password);
-        //const isPasswordMatched = await userModel.comparePassword(req.body.oldPassword);
-        console.log(isMatch);
-        if (!isMatch) {
-          return res.send({
-            status: 400,
-            message: "Old password is incorrect",
-          });
-        } else {
-          if (newPassword !== confirmPassword) {
-            return res.send({
-              status: "failed",
-              message: "password does not match",
-            });
-          } else {
-            const salt = await bcrypt.genSalt(10);
-            const newHashPassword = await bcrypt.hash(newPassword, salt);
-            //console.log(req.user)
-            await UserModel.findByIdAndUpdate(req.user._id, {
-              $set: { password: newHashPassword },
-            });
-            return res.send({
-              status: "success",
-              message: "Password changed succesfully",
-            });
-          }
+        const user = await UserModel.findById(req.user._id).select('+password');
+  
+        if (!user) {
+          return res.status(404).json({ status: 'failed', message: 'User not found' });
         }
+  
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+  
+        if (!isMatch) {
+          return res.status(400).json({ status: 'failed', message: 'Old password is incorrect' });
+        }
+  
+        if (newPassword !== confirmPassword) {
+          return res.status(400).json({ status: 'failed', message: 'Passwords do not match' });
+        }
+  
+        const salt = await bcrypt.genSalt(10);
+        const newHashPassword = await bcrypt.hash(newPassword, salt);
+  
+        await UserModel.findByIdAndUpdate(req.user._id, { $set: { password: newHashPassword } });
+  
+        return res.json({ status: 'success', message: 'Password changed successfully' });
       } else {
-        return res.send({
-          status: "failed",
-          message: "All Fields are Required",
-        });
+        return res.status(400).json({ status: 'failed', message: 'All fields are required' });
       }
     } catch (err) {
-      return res.send(err);
+      console.error(err);
+      res.status(500).json({ status: 'failed', message: 'Internal Server Error' });
     }
   };
+  
 
   // --------------- Logout user --------------------------//
   static logoutUser = async (req, res) => {
