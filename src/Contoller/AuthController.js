@@ -247,6 +247,7 @@ class AuthController {
              process.env.JWT_SECRETE_KEY,
               { expiresIn: "1h" }
             );
+            res.cookie("token", token);
 
             res.status(200).json({
               message: "Congratulations! User successfully logged in.",
