@@ -46,7 +46,7 @@ class AuthController {
     
       await otpRecord.save();
     
-      res.status(200).json({ success: true, message: "Success", otpRecord });
+      res.status(200).json({ success: true, message: "Success", otp });
       }
     } catch (error) {
       console.error(error);
