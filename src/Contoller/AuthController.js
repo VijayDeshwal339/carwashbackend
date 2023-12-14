@@ -163,63 +163,57 @@ class AuthController {
   };
 
   //-------------------------------------------------- resetPassword -------------------------------------------//
+  // static resetPassword = async (req, res) => {
+  //   try {
+  //     const { email, otp, newPassword } = req.body;
+  //     const user = await UserModel.findOne({ email: email, otp });
+  //     if (!user) {
+  //       return res.status(400).json({ success: false, message: "Invalid OTP" });
+  //     }
+  //     const hashedPassword = await bcrypt.hash(newPassword, 10);
+  //     user.password = hashedPassword;
+  //     user.otp = null;
+      
+  //     let x = await user.save();
+  //     console.log(x),
+  //       res
+  //         .status(200)
+  //         .json({ success: true, message: "Password reset successful" });
+  //   } catch (err) {
+  //     res.status(500).json({ message: "Internal Server Error" + err });
+  //   }
+  // };
   static resetPassword = async (req, res) => {
     try {
-      const { email, otp, newPassword } = req.body;
+      const { email, otp, newPassword, confirmPassword } = req.body;
+
+      // Check if new passwords match
+      if (newPassword !== confirmPassword) {
+        return res.status(400).json({ success: false, message: "Passwords do not match" });
+      }
+
       const user = await UserModel.findOne({ email: email, otp });
+
       if (!user) {
         return res.status(400).json({ success: false, message: "Invalid OTP" });
       }
+
       const hashedPassword = await bcrypt.hash(newPassword, 10);
       user.password = hashedPassword;
       user.otp = null;
       
-      let x = await user.save();
-      console.log(x),
-        res
-          .status(200)
-          .json({ success: true, message: "Password reset successful" });
+      let updatedUser = await user.save();
+      
+      console.log(updatedUser);
+      
+      res.status(200).json({ success: true, message: "Password reset successful" });
     } catch (err) {
-      res.status(500).json({ message: "Internal Server Error" + err });
+      console.error(err);
+      res.status(500).json({ success: false, message: "Internal Server Error" });
     }
-  };
+};
 
-  // static resetPassword = async (req, res) => {
-  //   //console.log(req.user)
-  //   try {
-  //     const { oldPassword, newPassword, confirmPassword } = req.body;
-  
-  //     if (oldPassword && newPassword && confirmPassword) {
-  //       const user = await UserModel.findById(req.user._id).select('+password');
-  
-  //       if (!user) {
-  //         return res.status(404).json({ status: 'failed', message: 'User not found' });
-  //       }
-  
-  //       const isMatch = await bcrypt.compare(oldPassword, user.password);
-  
-  //       if (!isMatch) {
-  //         return res.status(400).json({ status: 'failed', message: 'Old password is incorrect' });
-  //       }
-  
-  //       if (newPassword !== confirmPassword) {
-  //         return res.status(400).json({ status: 'failed', message: 'Passwords do not match' });
-  //       }
-  
-  //       const salt = await bcrypt.genSalt(10);
-  //       const newHashPassword = await bcrypt.hash(newPassword, salt);
-  
-  //       await UserModel.findByIdAndUpdate(req.user._id, { $set: { password: newHashPassword } });
-  
-  //       return res.json({ status: 'success', message: 'Password changed successfully' });
-  //     } else {
-  //       return res.status(400).json({ status: 'failed', message: 'All fields are required' });
-  //     }
-  //   } catch (err) {
-  //     console.error(err);
-  //     res.status(500).json({ status: 'failed', message: 'Internal Server Error' });
-  //   }
-  // };
+
   
 
   // --------------- Logout user --------------------------//
